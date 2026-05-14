@@ -26,6 +26,22 @@ A powerful Smart Contract agent that scouts for opportunities across multiple bl
 - **Blockchain**: Ethers.js v6
 - **Styling**: Premium Vanilla CSS (Glassmorphism)
 
+## Setup
+
+1. **Install Dependencies**:
+   ```bash
+   bun install
+   ```
+2. **Environment Variables**:
+   Copy `.env.example` to `.env` and add your RPC URLs:
+   ```bash
+   cp .env.example .env
+   ```
+3. **Run Locally**:
+   ```bash
+   bun dev
+   ```
+
 ## Decision Making Rubric
 
 The agent uses a scoring system to interpret "Success" or "Failure":
