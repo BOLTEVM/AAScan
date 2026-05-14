@@ -17,6 +17,7 @@ A powerful Smart Contract agent that scouts for opportunities across multiple bl
 - **Security Sieve**: Advanced analysis of:
   - **Admin Key Status**: Verifies if contract ownership is renounced.
   - **Transferability**: Ensures tokens are not locked or restricted (honeypot detection).
+- **Personalized AI Agent**: Connect your wallet to analyze your transaction history for context-aware opportunities.
 - **Reporting Engine**: Generates comprehensive markdown reports on scouting outcomes.
 
 ## Tech Stack

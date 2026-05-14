@@ -9,6 +9,7 @@ function App() {
   const [status, setStatus] = useState('Idle');
   const [isScanning, setIsScanning] = useState(false);
   const [results, setResults] = useState([]);
+  const [account, setAccount] = useState(null);
   const logEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -35,11 +36,25 @@ function App() {
     }
   };
 
+  const connectWallet = async () => {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        setAccount(accounts[0]);
+        setLogs(prev => [...prev, { type: 'success', timestamp: new Date().toLocaleTimeString(), message: `Wallet connected: ${accounts[0].slice(0, 6)}...${accounts[0].slice(-4)}` }]);
+      } catch (error) {
+        setLogs(prev => [...prev, { type: 'error', timestamp: new Date().toLocaleTimeString(), message: `Connection failed: ${error.message}` }]);
+      }
+    } else {
+      alert("Please install MetaMask!");
+    }
+  };
+
   const startScout = async () => {
     setIsScanning(true);
     setResults([]);
     setLogs([]);
-    const scout = new Scout(handleUpdate);
+    const scout = new Scout(handleUpdate, account);
     await scout.startScouting();
     setIsScanning(false);
   };
@@ -81,14 +96,24 @@ function App() {
             <span className="stat-value">4</span>
           </div>
           
-          <div style={{ marginTop: 'auto' }}>
+          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {!account ? (
+              <button className="btn" onClick={connectWallet} style={{ width: '100%' }}>
+                Connect Wallet
+              </button>
+            ) : (
+              <div className="stat-item" style={{ border: '1px solid var(--accent)', borderRadius: '8px', padding: '8px' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--accent)' }}>{account.slice(0, 6)}...{account.slice(-4)}</span>
+              </div>
+            )}
+
             <button 
               className="btn" 
               onClick={startScout} 
               disabled={isScanning}
               style={{ width: '100%' }}
             >
-              {isScanning ? 'Scouting...' : 'Start Scouting'}
+              {isScanning ? (account ? 'Analyzing Wallet...' : 'Scouting...') : (account ? 'Analyze My Wallet' : 'Start Scouting')}
             </button>
             <button 
               className="btn btn-secondary" 

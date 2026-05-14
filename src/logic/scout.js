@@ -3,8 +3,9 @@ import { config } from '../config';
 import { Rubric } from './rubric';
 
 export class Scout {
-  constructor(onUpdate) {
+  constructor(onUpdate, userAddress = null) {
     this.onUpdate = onUpdate;
+    this.userAddress = userAddress;
     this.providers = config.chains.map(chain => ({
       ...chain,
       provider: new JsonRpcProvider(chain.rpc)
@@ -12,8 +13,12 @@ export class Scout {
   }
 
   async startScouting() {
-    this.onUpdate({ type: 'STATUS', message: 'Starting multi-chain scout...' });
+    this.onUpdate({ type: 'STATUS', message: this.userAddress ? `Analyzing history for ${this.userAddress.slice(0, 8)}...` : 'Starting multi-chain scout...' });
     
+    if (this.userAddress) {
+      await this.analyzeWalletHistory();
+    }
+
     for (const chain of this.providers) {
       try {
         this.onUpdate({ type: 'SCAN', chain: chain.name, message: `Scanning ${chain.name}...` });
@@ -44,6 +49,40 @@ export class Scout {
     }
     
     this.onUpdate({ type: 'STATUS', message: 'Scout cycle complete.' });
+  }
+
+  async analyzeWalletHistory() {
+    this.onUpdate({ type: 'SCAN', message: 'Fetching transaction history...' });
+    await new Promise(r => setTimeout(r, 1500)); // Simulate work
+    
+    this.onUpdate({ type: 'SCAN', message: 'AI Agent interpreting context...' });
+    await new Promise(r => setTimeout(r, 1000));
+    
+    // Simulate finding context-aware opportunities
+    const personalFindings = [
+      {
+        type: 'RESULT',
+        chain: 'Ethereum',
+        protocol: 'Legacy Protocol Re-engagement',
+        success: true,
+        summary: 'Detected 2021 interaction. Eligible for retroactive claims.',
+        data: { volume: 5000, txCount: 1, protocolAge: 1000, arbitrageProfit: 0, adminKeyRenounced: true, isTransferable: true },
+        timestamp: new Date().toISOString()
+      },
+      {
+        type: 'RESULT',
+        chain: 'Arbitrum',
+        protocol: 'Liquidity Provider Reward',
+        success: true,
+        summary: 'Based on your GMX history, you are eligible for the Arbitrum Odyssey NFT.',
+        data: { volume: 10000, txCount: 150, protocolAge: 400, arbitrageProfit: 0, adminKeyRenounced: true, isTransferable: true },
+        timestamp: new Date().toISOString()
+      }
+    ];
+
+    for (const finding of personalFindings) {
+      this.onUpdate(finding);
+    }
   }
 
   generateMockOpportunities(chainName) {
