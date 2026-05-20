@@ -4,21 +4,25 @@ export class Reporter {
     const successCount = results.filter(r => r.success).length;
     const failureCount = results.length - successCount;
 
-    let report = `# Airdrop Agent Scouting Report\n\n`;
+    let report = '# Airdrop Agent Scouting Report\n\n';
     report += `**Generated:** ${timestamp}\n`;
     report += `**Total Scanned:** ${results.length}\n`;
     report += `**Opportunities Found:** ${successCount}\n`;
     report += `**Ineligible:** ${failureCount}\n\n`;
 
-    report += `## Detailed Breakdown\n\n`;
-    
+    report += '## Detailed Breakdown\n\n';
+
     results.forEach(res => {
-      const status = res.success ? '✅ SUCCESS' : '❌ FAILED';
+      const status = res.success ? 'SUCCESS' : 'FAILED';
       report += `### [${res.chain}] ${res.protocol}\n`;
       report += `- **Status:** ${status}\n`;
       report += `- **Summary:** ${res.summary}\n`;
       report += `- **Metrics:** Vol: ${res.data.volume.toFixed(2)}, Txs: ${res.data.txCount}, Age: ${res.data.protocolAge}d, Arb: ${(res.data.arbitrageProfit * 100).toFixed(2)}%\n`;
-      report += `- **Security:** Admin Renounced: ${res.data.adminKeyRenounced ? '✅' : '❌'}, Transferable: ${res.data.isTransferable ? '✅' : '❌'}\n\n`;
+      report += `- **Security:** Admin Renounced: ${res.data.adminKeyRenounced ? 'yes' : 'no'}, Transferable: ${res.data.isTransferable ? 'yes' : 'no'}\n`;
+      if (res.action) {
+        report += `- **Action:** ${res.action.label} (${res.action.status}) - ${res.action.reason}\n`;
+      }
+      report += '\n';
     });
 
     return report;
@@ -34,5 +38,6 @@ export class Reporter {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 }

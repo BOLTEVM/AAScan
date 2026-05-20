@@ -34,10 +34,11 @@ A powerful Smart Contract agent that scouts for opportunities across multiple bl
    bun install
    ```
 2. **Environment Variables**:
-   Copy `.env.example` to `.env` and add your RPC URLs:
+   Copy `.env.example` to `.env` and add your Ankr RPC key:
    ```bash
    cp .env.example .env
    ```
+   Chain-specific `VITE_*_RPC` values are optional overrides. If they are blank, the app derives RPC URLs from `VITE_ANKR_API_KEY`.
 3. **Run Locally**:
    ```bash
    bun dev

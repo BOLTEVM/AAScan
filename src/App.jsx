@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Scout } from './logic/scout';
 import { Reporter } from './logic/reporter';
-import { Shield, Target, Zap, FileText, Activity } from 'lucide-react';
+import { config } from './config';
+import { Shield, Target, Zap, FileText, Activity, Bot, PauseCircle } from 'lucide-react';
 import './styles.css';
 
 function App() {
   const [logs, setLogs] = useState([]);
   const [status, setStatus] = useState('Idle');
   const [isScanning, setIsScanning] = useState(false);
+  const [isAutonomous, setIsAutonomous] = useState(config.autonomy.enabledByDefault);
   const [results, setResults] = useState([]);
   const [account, setAccount] = useState(null);
   const logEndRef = useRef(null);
+  const scoutRef = useRef(null);
 
   const scrollToBottom = () => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -20,19 +23,26 @@ function App() {
     scrollToBottom();
   }, [logs]);
 
+  useEffect(() => () => {
+    scoutRef.current?.stop();
+  }, []);
+
   const handleUpdate = (update) => {
+    const timestamp = new Date().toLocaleTimeString();
+
     if (update.type === 'STATUS') {
       setStatus(update.message);
-      setLogs(prev => [...prev, { ...update, timestamp: new Date().toLocaleTimeString() }]);
+      setLogs(prev => [...prev, { ...update, timestamp }]);
     } else if (update.type === 'RESULT') {
-      setResults(prev => [...prev, update]);
+      setResults(prev => [update, ...prev].slice(0, config.autonomy.maxResults));
       setLogs(prev => [...prev, { 
         ...update, 
+        timestamp,
         type: update.success ? 'success' : 'error',
-        message: `[${update.chain}] ${update.protocol}: ${update.summary}`
+        message: `[${update.chain}] ${update.protocol}: ${update.summary} (${update.action?.label || 'No action'})`
       }]);
     } else {
-      setLogs(prev => [...prev, { ...update, timestamp: new Date().toLocaleTimeString(), message: update.message || `Scanning ${update.chain}...` }]);
+      setLogs(prev => [...prev, { ...update, timestamp, message: update.message || `Scanning ${update.chain}...` }]);
     }
   };
 
@@ -52,10 +62,28 @@ function App() {
 
   const startScout = async () => {
     setIsScanning(true);
-    setResults([]);
-    setLogs([]);
-    const scout = new Scout(handleUpdate, account);
+    const scout = new Scout(handleUpdate, account, { maxCycles: 1 });
+    scoutRef.current = scout;
     await scout.startScouting();
+    setIsScanning(false);
+  };
+
+  const toggleAutonomy = async () => {
+    if (isAutonomous) {
+      scoutRef.current?.stop();
+      scoutRef.current = null;
+      setIsAutonomous(false);
+      setIsScanning(false);
+      handleUpdate({ type: 'STATUS', message: 'Autonomous mode stopping after current operation.' });
+      return;
+    }
+
+    setIsAutonomous(true);
+    setIsScanning(true);
+    const scout = new Scout(handleUpdate, account);
+    scoutRef.current = scout;
+    await scout.startAutonomous();
+    setIsAutonomous(false);
     setIsScanning(false);
   };
 
@@ -78,7 +106,7 @@ function App() {
           <div className="stat-item">
             <span><Shield size={20} color="var(--accent)" /> Engine Status</span>
             <span className="stat-value" style={{ fontSize: '1rem', color: isScanning ? 'var(--success)' : 'var(--text-secondary)' }}>
-              {isScanning ? 'ACTIVE' : 'IDLE'}
+              {isAutonomous ? 'AUTO' : isScanning ? 'ACTIVE' : 'IDLE'}
             </span>
           </div>
           <div className="stat-item">
@@ -93,7 +121,13 @@ function App() {
           </div>
           <div className="stat-item">
             <span><Activity size={20} color="var(--accent)" /> Active Chains</span>
-            <span className="stat-value">4</span>
+            <span className="stat-value">{config.chains.length}</span>
+          </div>
+          <div className="stat-item">
+            <span><Bot size={20} color="var(--accent)" /> Action Policy</span>
+            <span className="stat-value" style={{ fontSize: '0.9rem' }}>
+              {config.autonomy.executeTransactions ? 'EXECUTE' : 'QUEUE'}
+            </span>
           </div>
           
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -113,7 +147,24 @@ function App() {
               disabled={isScanning}
               style={{ width: '100%' }}
             >
-              {isScanning ? (account ? 'Analyzing Wallet...' : 'Scouting...') : (account ? 'Analyze My Wallet' : 'Start Scouting')}
+              {isScanning ? (account ? 'Analyzing Wallet...' : 'Scouting...') : (account ? 'Run One Cycle' : 'Scout Once')}
+            </button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={toggleAutonomy}
+              style={{ width: '100%', marginLeft: 0 }}
+            >
+              {isAutonomous ? (
+                <>
+                  <PauseCircle size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                  Stop Autonomy
+                </>
+              ) : (
+                <>
+                  <Bot size={18} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                  Start Autonomy
+                </>
+              )}
             </button>
             <button 
               className="btn btn-secondary" 
@@ -138,6 +189,7 @@ function App() {
               <div key={i} className={`log-entry ${log.type || ''}`}>
                 <span style={{ color: 'var(--text-secondary)', marginRight: '10px' }}>[{log.timestamp}]</span>
                 {log.message}
+                {log.action?.reason && <small className="action-reason">{log.action.reason}</small>}
               </div>
             ))}
             <div ref={logEndRef} />

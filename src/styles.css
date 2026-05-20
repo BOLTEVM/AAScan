@@ -139,6 +139,13 @@ h1 {
 .log-entry.error { border-left-color: var(--error); background: rgba(255, 77, 77, 0.05); }
 .log-entry.scan { border-left-color: var(--accent); background: rgba(0, 242, 255, 0.05); }
 
+.action-reason {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
 .btn {
   background: var(--accent);
   color: var(--bg-dark);

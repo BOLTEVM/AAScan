@@ -1,23 +1,28 @@
+const ankrApiKey = import.meta.env.VITE_ANKR_API_KEY;
+const ankrRpc = (network) => ankrApiKey
+  ? `https://rpc.ankr.com/${network}/${ankrApiKey}`
+  : `https://rpc.ankr.com/${network}`;
+
 export const config = {
   chains: [
     {
       name: 'Ethereum',
-      rpc: import.meta.env.VITE_ETH_RPC || 'https://eth.llamarpc.com',
+      rpc: import.meta.env.VITE_ETH_RPC || ankrRpc('eth'),
       id: 1,
     },
     {
       name: 'Arbitrum',
-      rpc: import.meta.env.VITE_ARB_RPC || 'https://arbitrum.llamarpc.com',
+      rpc: import.meta.env.VITE_ARB_RPC || ankrRpc('arbitrum'),
       id: 42161,
     },
     {
       name: 'Polygon',
-      rpc: import.meta.env.VITE_POLY_RPC || 'https://polygon.llamarpc.com',
+      rpc: import.meta.env.VITE_POLY_RPC || ankrRpc('polygon'),
       id: 137,
     },
     {
       name: 'Base',
-      rpc: import.meta.env.VITE_BASE_RPC || 'https://base.llamarpc.com',
+      rpc: import.meta.env.VITE_BASE_RPC || ankrRpc('base'),
       id: 8453,
     }
   ],
@@ -28,5 +33,13 @@ export const config = {
     arbitrageProfitMargin: 0.02, // 2%
     requireAdminRenounced: true,
     requireTransferable: true,
+  },
+  autonomy: {
+    enabledByDefault: false,
+    cycleIntervalMs: 60_000,
+    maxCycles: 0,
+    maxResults: 250,
+    executeTransactions: false,
+    minNativeBalance: '0.01',
   }
 };
