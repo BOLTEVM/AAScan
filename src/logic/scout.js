@@ -1,5 +1,6 @@
 import { formatEther, JsonRpcProvider, parseEther } from 'ethers';
 import { config } from '../config';
+import { FlashLoanPlanner } from './flashloan-planner';
 import { Rubric } from './rubric';
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -63,10 +64,11 @@ export class Scout {
 
         const blockNumber = await chain.provider.getBlockNumber();
         const protocols = await this.discoverOpportunities(chain, blockNumber);
+        const flashLoanPlan = await this.planFlashLoan(chain);
 
-        for (const protocol of protocols) {
+        for (const protocol of [...protocols, flashLoanPlan]) {
           const evaluation = Rubric.evaluate(protocol.data);
-          const action = await this.planAction(chain, protocol, evaluation);
+          const action = protocol.action || await this.planAction(chain, protocol, evaluation);
 
           this.onUpdate({
             type: 'RESULT',
@@ -169,6 +171,31 @@ export class Scout {
         }
       }
     ];
+  }
+
+  async planFlashLoan(chain) {
+    const planner = new FlashLoanPlanner(chain.provider, chain, this.userAddress);
+    const plan = await planner.planBestRoute();
+    const netProfitBps = plan.quote?.netProfitBps ?? 0;
+    const success = plan.decision === 'ready';
+
+    return {
+      name: 'Flash Loan Transaction Planner',
+      data: {
+        volume: Number(plan.quote?.amountIn ?? 0),
+        txCount: plan.gates.length,
+        protocolAge: config.rubric.minProtocolAgeDays,
+        arbitrageProfit: Math.max(0, netProfitBps / 10_000),
+        adminKeyRenounced: plan.integrity === 'high',
+        isTransferable: success
+      },
+      action: {
+        status: success ? 'ready' : plan.decision,
+        label: success ? 'Simulation ready' : 'Fail-closed',
+        reason: plan.reason,
+        plan
+      }
+    };
   }
 
   async getNativeLiquiditySignal(chain) {

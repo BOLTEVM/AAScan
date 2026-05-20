@@ -39,6 +39,7 @@ A powerful Smart Contract agent that scouts for opportunities across multiple bl
    cp .env.example .env
    ```
    Chain-specific `VITE_*_RPC` values are optional overrides. If they are blank, the app derives RPC URLs from `VITE_ANKR_API_KEY`.
+   Flash-loan planning is fail-closed until you configure a deployed receiver contract, lending pool addresses, and explicit routes in `src/config.js`.
 3. **Run Locally**:
    ```bash
    bun dev

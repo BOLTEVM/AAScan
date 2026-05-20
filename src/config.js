@@ -41,5 +41,22 @@ export const config = {
     maxResults: 250,
     executeTransactions: false,
     minNativeBalance: '0.01',
+  },
+  flashLoan: {
+    enabled: true,
+    protocol: 'AAVE_V3',
+    receiverAddress: import.meta.env.VITE_FLASH_LOAN_RECEIVER || '',
+    referralCode: Number(import.meta.env.VITE_FLASH_LOAN_REFERRAL_CODE || 0),
+    fallbackPremiumBps: Number(import.meta.env.VITE_FLASH_LOAN_PREMIUM_BPS || 9),
+    minNetProfitBps: Number(import.meta.env.VITE_FLASH_LOAN_MIN_NET_PROFIT_BPS || 25),
+    maxSlippageBps: Number(import.meta.env.VITE_FLASH_LOAN_MAX_SLIPPAGE_BPS || 30),
+    gasLimit: BigInt(import.meta.env.VITE_FLASH_LOAN_GAS_LIMIT || 650000),
+    pools: {
+      1: import.meta.env.VITE_AAVE_V3_POOL_ETH || '',
+      42161: import.meta.env.VITE_AAVE_V3_POOL_ARB || '',
+      137: import.meta.env.VITE_AAVE_V3_POOL_POLY || '',
+      8453: import.meta.env.VITE_AAVE_V3_POOL_BASE || '',
+    },
+    routes: []
   }
 };
