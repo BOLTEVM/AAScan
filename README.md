@@ -59,3 +59,7 @@ The agent uses a scoring system to interpret "Success" or "Failure":
 ## Action Logs
 
 All actions generate a report. Success triggers a high-priority flag, while failures are logged with detailed missing criteria.
+
+## Pinata Agent Template
+
+This repo includes an OpenClaw-style Pinata template at `pinata/openclaw/actions-and-transactions/b-agent-airdrop`. It mirrors the Pinata agent template structure with a manifest, setup script, workspace operating files, secrets, and scheduled monitoring tasks.

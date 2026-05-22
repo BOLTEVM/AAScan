@@ -1,0 +1,69 @@
+{
+  "$schema": "https://agents.pinata.cloud/schemas/manifest.v1.json",
+  "version": 1,
+  "agent": {
+    "name": "B-Agent Onchain Scout",
+    "description": "An autonomous, fail-closed onchain agent for airdrop scouting, wallet readiness checks, and high-integrity flash-loan transaction planning.",
+    "vibe": "data-first, risk-aware, autonomous when observing, explicit before transacting",
+    "emoji": "BA"
+  },
+  "template": {
+    "slug": "b-agent-airdrop",
+    "category": "actions & transactions",
+    "tags": ["defi", "airdrop", "flash-loan", "onchain", "autonomous-agent", "ankr"],
+    "authorName": "B-Agent",
+    "authorUrl": "https://github.com/PinataCloud/agent-templates",
+    "authorLogoUrl": "https://pinataassets.cloud/partner-logos/mark-black.png"
+  },
+  "secrets": [
+    {
+      "name": "VITE_ANKR_API_KEY",
+      "description": "Ankr RPC API key used for Ethereum, Arbitrum, Polygon, and Base reads.",
+      "required": true
+    },
+    {
+      "name": "VITE_FLASH_LOAN_RECEIVER",
+      "description": "Deployed flash-loan receiver contract. Required before any route can become simulation-ready.",
+      "required": false
+    },
+    {
+      "name": "VITE_AAVE_V3_POOL_ETH",
+      "description": "Aave V3 pool address on Ethereum.",
+      "required": false
+    },
+    {
+      "name": "VITE_AAVE_V3_POOL_ARB",
+      "description": "Aave V3 pool address on Arbitrum.",
+      "required": false
+    },
+    {
+      "name": "VITE_AAVE_V3_POOL_POLY",
+      "description": "Aave V3 pool address on Polygon.",
+      "required": false
+    },
+    {
+      "name": "VITE_AAVE_V3_POOL_BASE",
+      "description": "Aave V3 pool address on Base.",
+      "required": false
+    }
+  ],
+  "scripts": {
+    "build": "bash setup.sh",
+    "start": ""
+  },
+  "tasks": [
+    {
+      "name": "onchain-scout-cycle",
+      "prompt": "Run one B-Agent scout cycle. Check configured chains, summarize airdrop readiness, flash-loan planner gate status, Ankr RPC health, and any fail-closed blockers. Do not submit transactions.",
+      "schedule": "*/30 * * * *",
+      "enabled": true
+    },
+    {
+      "name": "daily-risk-review",
+      "prompt": "Review the flash-loan route configuration, receiver address, pool addresses, gas assumptions, slippage policy, and simulation outcomes. Update MEMORY.md with blockers and required human decisions. Do not submit transactions.",
+      "schedule": "0 9 * * *",
+      "enabled": true
+    }
+  ],
+  "routes": []
+}
